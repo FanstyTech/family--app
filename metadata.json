@@ -1,0 +1,6 @@
+{
+  "name": "منصة شجرة العائلة",
+  "description": "منصة تفاعلية حديثة لعرض شجرة العائلة وإدارة نسب الأفراد وتاريخهم بالكامل.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

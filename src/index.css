@@ -1,0 +1,69 @@
+@import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;900&display=swap');
+@import "tailwindcss";
+
+@theme {
+  --font-sans: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
+  --font-heading: 'Cairo', 'Tajawal', system-ui, sans-serif;
+  
+  --color-art-bg: var(--color-art-bg);
+  --color-art-surface: var(--color-art-surface);
+  --color-art-border: var(--color-art-border);
+  --color-art-brass: var(--color-art-brass);
+  --color-art-gold: var(--color-art-gold);
+  --color-art-ink: var(--color-art-ink);
+  --color-art-ink-muted: var(--color-art-ink-muted);
+}
+
+:root {
+  color-scheme: light dark;
+  --color-art-bg: #FDFCF8;
+  --color-art-surface: #F5F2EA;
+  --color-art-border: #E5E1D8;
+  --color-art-brass: #8C7342;
+  --color-art-gold: #C5A059;
+  --color-art-ink: #1A1A1A;
+  --color-art-ink-muted: #5C5850;
+}
+
+.dark {
+  --color-art-bg: #12100E;
+  --color-art-surface: #1E1B18;
+  --color-art-border: #2E2A28;
+  --color-art-brass: #D4BD96;
+  --color-art-gold: #E2D2B8;
+  --color-art-ink: #FAF6ED;
+  --color-art-ink-muted: #A8A297;
+}
+
+body {
+  font-family: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
+  direction: rtl;
+  text-align: right;
+  background-color: var(--color-art-bg);
+  color: var(--color-art-ink);
+  transition: background-color 0.3s, color 0.3s;
+}
+
+/* Custom scrollbar for beautiful pan panels */
+::-webkit-scrollbar {
+  width: 6px;
+  height: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: rgba(140, 115, 66, 0.2);
+  border-radius: 8px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(140, 115, 66, 0.4);
+}
+
+.pan-container {
+  cursor: grab;
+  user-select: none;
+}
+.pan-container:active {
+  cursor: grabbing;
+}
