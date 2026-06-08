@@ -361,17 +361,14 @@ export default function AdminPanel({
                   <label className="block text-xs font-bold text-slate-700 dark:text-slate-300 mb-1.5">
                     الجيل السني للشجرة *
                   </label>
-                  <select
+                  <input
+                    type="number"
+                    min={1}
+                    required
                     value={memberForm.generation}
-                    onChange={(e) => setMemberForm({ ...memberForm, generation: parseInt(e.target.value) })}
+                    onChange={(e) => setMemberForm({ ...memberForm, generation: Math.max(1, parseInt(e.target.value) || 1) })}
                     className="w-full rounded-xl border border-slate-200 px-4 py-2.5 text-xs text-slate-950 bg-slate-50 focus:bg-white dark:border-slate-800 dark:bg-slate-900 dark:text-white"
-                  >
-                    <option value={1}>الجيل الأول (الجيل المؤسس)</option>
-                    <option value={2}>الجيل الثاني (الأبناء)</option>
-                    <option value={3}>الجيل الثالث (الأحفاد)</option>
-                    <option value={4}>الجيل الرابع (أبناء الأحفاد)</option>
-                    <option value={5}>الجيل الخامس</option>
-                  </select>
+                  />
                 </div>
 
                 <div>

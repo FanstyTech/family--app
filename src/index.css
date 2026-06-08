@@ -1,5 +1,6 @@
 @import url('https://fonts.googleapis.com/css2?family=Cairo:wght@300;400;500;600;700;800&family=Tajawal:wght@300;400;500;700;900&display=swap');
 @import "tailwindcss";
+@variant dark (&:where(.dark, .dark *));
 
 @theme {
   --font-sans: 'Cairo', 'Tajawal', system-ui, -apple-system, sans-serif;
@@ -15,7 +16,7 @@
 }
 
 :root {
-  color-scheme: light dark;
+  color-scheme: light;
   --color-art-bg: #FDFCF8;
   --color-art-surface: #F5F2EA;
   --color-art-border: #E5E1D8;
@@ -26,6 +27,7 @@
 }
 
 .dark {
+  color-scheme: dark;
   --color-art-bg: #12100E;
   --color-art-surface: #1E1B18;
   --color-art-border: #2E2A28;

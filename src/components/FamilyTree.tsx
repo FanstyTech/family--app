@@ -3,12 +3,12 @@
  * SPDX-License-Identifier: Apache-2.0
  */
 
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useRef, useEffect, useCallback } from 'react';
 import { FamilyMember } from '../types';
 import { getAvatarColor, getInitials, getGenerationLabel } from '../utils';
-import { 
-  ZoomIn, ZoomOut, Maximize2, Search, Heart, User, 
-  HelpCircle, Move, HelpCircle as HelpIcon, Sparkles, Pin
+import {
+  ZoomIn, ZoomOut, Maximize2, Search, Heart, User,
+  HelpCircle, Move, HelpCircle as HelpIcon, Sparkles, Pin, PanelRightClose, PanelRightOpen
 } from 'lucide-react';
 
 interface FamilyTreeProps {
@@ -26,6 +26,7 @@ export default function FamilyTree({
   const [zoom, setZoom] = useState(1);
   const [pan, setPan] = useState({ x: 0, y: 0 });
   const [isDragging, setIsDragging] = useState(false);
+  const [isAnimating, setIsAnimating] = useState(false);
   const dragStart = useRef({ x: 0, y: 0 });
   const containerRef = useRef<HTMLDivElement>(null);
 
@@ -33,6 +34,7 @@ export default function FamilyTree({
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedGenFilter, setSelectedGenFilter] = useState<number | 'all'>('all');
   const [highlightedId, setHighlightedId] = useState<string | null>(initialHighlightId);
+  const [showSearch, setShowSearch] = useState(false);
 
   useEffect(() => {
     if (initialHighlightId) {
@@ -44,8 +46,8 @@ export default function FamilyTree({
 
   // Handle Dragging
   const handleMouseDown = (e: React.MouseEvent) => {
-    // Only drag with left click
     if (e.button !== 0) return;
+    setIsAnimating(false);
     setIsDragging(true);
     dragStart.current = { x: e.clientX - pan.x, y: e.clientY - pan.y };
   };
@@ -62,29 +64,51 @@ export default function FamilyTree({
     setIsDragging(false);
   };
 
+  // Center tree in container
+  const centerTree = useCallback(() => {
+    if (!containerRef.current) return;
+    const cw = containerRef.current.offsetWidth;
+    const ch = containerRef.current.offsetHeight;
+    setPan({
+      x: cw * 0.2 - 1000,
+      y: ch * 0.3 - 150,
+    });
+  }, []);
+
+  useEffect(() => {
+    centerTree();
+  }, [centerTree]);
+
   // Zoom controls
   const handleZoomIn = () => setZoom(prev => Math.min(prev + 0.15, 2));
   const handleZoomOut = () => setZoom(prev => Math.max(prev - 0.15, 0.4));
   const handleResetZoom = () => {
     setZoom(1);
-    setPan({ x: 0, y: 0 });
+    centerTree();
   };
 
-  // Center on a specific member element
+  // Center on a specific member element with auto zoom
   const centerOnMember = (id: string) => {
     const el = document.getElementById(`node-card-${id}`);
-    if (el && containerRef.current) {
-      const containerRect = containerRef.current.getBoundingClientRect();
-      const elRect = el.getBoundingClientRect();
-      
-      // Calculate coordinates to center this element
-      const x = (containerRect.width / 2) - (elRect.width / 2) - (el.offsetLeft * zoom);
-      const y = (containerRect.height / 2) - (elRect.height / 2) - (el.offsetTop * zoom);
-      
-      // Smooth transitions would be nice, but instant offset gets user to target reliably
-      setPan({ x: x || 0, y: y || 100 });
-      setHighlightedId(id);
-    }
+    if (!el || !containerRef.current) return;
+
+    setIsAnimating(true);
+    setZoom(1.3);
+    setHighlightedId(id);
+
+    requestAnimationFrame(() => {
+      requestAnimationFrame(() => {
+        const el2 = document.getElementById(`node-card-${id}`);
+        if (!el2 || !containerRef.current) return;
+        const containerRect = containerRef.current.getBoundingClientRect();
+        const elRect = el2.getBoundingClientRect();
+        setPan(prev => ({
+          x: prev.x + (containerRect.left + containerRect.width / 2) - (elRect.left + elRect.width / 2),
+          y: prev.y + (containerRect.top + containerRect.height / 2) - (elRect.top + elRect.height / 2),
+        }));
+        setTimeout(() => setIsAnimating(false), 600);
+      });
+    });
   };
 
   // Build high-efficiency maps
@@ -106,7 +130,8 @@ export default function FamilyTree({
   });
 
   // Organize members into groups by generation for visual structuring
-  const generations = [1, 2, 3, 4];
+  const maxGen = members.reduce((max, m) => Math.max(max, m.generation), 4);
+  const generations = Array.from({ length: maxGen }, (_, i) => i + 1);
 
   // Helper: Get direct descendants of a coupling
   const getChildrenOfSpouses = (parentA_Id: string, parentB_Id?: string) => {
@@ -121,8 +146,19 @@ export default function FamilyTree({
   return (
     <div className="relative h-[calc(100vh-10rem)] w-full overflow-hidden bg-art-surface border border-art-border rounded-3xl flex flex-col md:flex-row shadow-xl">
       
+      {/* Toggle Search Button */}
+      <button
+        onClick={() => setShowSearch(prev => !prev)}
+        className="absolute top-4 right-4 z-30 flex items-center gap-2 px-3 py-2 rounded-xl bg-art-bg/95 backdrop-blur-md border border-art-border shadow-lg text-xs font-bold text-art-ink hover:bg-art-surface transition-all"
+        title={showSearch ? 'إخفاء البحث' : 'إظهار البحث'}
+      >
+        {showSearch ? <PanelRightClose className="h-4 w-4 text-art-brass" /> : <PanelRightOpen className="h-4 w-4 text-art-brass" />}
+        {showSearch ? 'إخفاء البحث' : 'إظهار البحث'}
+      </button>
+
       {/* 1. Floating Sidebar Panel (Search, Filters, Guidance) */}
-      <div className="absolute top-4 right-4 z-40 w-full max-w-xs md:max-w-sm bg-art-bg/95 backdrop-blur-md rounded-2xl border border-art-border p-5 shadow-xl space-y-4 max-h-[85%] overflow-y-auto">
+      {showSearch && (
+      <div className="absolute top-16 right-4 z-20 w-full max-w-xs md:max-w-sm bg-art-bg/95 backdrop-blur-md rounded-2xl border border-art-border p-5 shadow-xl space-y-4 max-h-[78%] overflow-y-auto">
         <div className="flex items-center gap-2">
           <span className="flex h-7 w-7 items-center justify-center rounded-lg bg-art-surface text-art-brass shrink-0 border border-art-border">
             <Search className="h-4 w-4" />
@@ -170,7 +206,7 @@ export default function FamilyTree({
                     : 'bg-art-surface text-art-ink hover:bg-art-border border-art-border'
                 }`}
               >
-                الجيل {gen === 1 ? 'الأول' : gen === 2 ? 'الثاني' : gen === 3 ? 'الثالث' : 'الرابع'}
+                {getGenerationLabel(gen).split(' ').slice(0, 2).join(' ')}
               </button>
             ))}
           </div>
@@ -217,6 +253,7 @@ export default function FamilyTree({
           <span>اسحب واحجز الشجرة بالماوس أو الجوال للمشاهدة كاملة.</span>
         </div>
       </div>
+      )}
 
       {/* 2. Floating Action Controls for Panning & Zooming */}
       <div className="absolute bottom-6 left-6 z-40 flex items-center gap-2 bg-art-bg/95 backdrop-blur-md rounded-xl border border-art-border p-2 shadow-xl">
@@ -261,7 +298,7 @@ export default function FamilyTree({
         }}
       >
         <div
-          className="absolute origin-center transition-transform duration-75 select-none"
+          className={`absolute origin-center select-none ${isAnimating ? 'transition-transform duration-500 ease-out' : 'transition-transform duration-75'}`}
           style={{
             transform: `translate(${pan.x}px, ${pan.y}px) scale(${zoom})`,
             top: '20%',

@@ -92,7 +92,7 @@ export default function Gallery({ galleryItems }: GalleryProps) {
                 </button>
 
                 {/* Big Image */}
-                <div className="aspect-16/10 bg-art-ink/90 flex items-center justify-center">
+                <div className="aspect-16/10 bg-slate-100 dark:bg-slate-900 flex items-center justify-center">
                   <img
                     src={activeImage.url}
                     alt={activeImage.title}
